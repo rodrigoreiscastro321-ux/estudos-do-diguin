@@ -708,14 +708,17 @@
     }
 
     async function fetchAI(promptText) {
-      // SUBSTITUA A FRASE ABAIXO PELA SUA CHAVE DE API REAL COMPLETA
+      // Cole a sua chave nova que começa com "AQ." aqui embaixo:
       const API_KEY_FIXA = "AQ.Ab8RN6L-4joXxNtG7NVYJucr42HFbrZNefOblc420jc9_qWgp"; 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY_FIXA}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
 
       try {
         const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-goog-api-key': API_KEY_FIXA
+          },
           body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
         });
         const data = await res.json();
