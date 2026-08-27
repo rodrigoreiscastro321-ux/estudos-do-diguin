@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Studio Pro + AI Suite</title>
+  
+  <!-- PDF.js para Renderização -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
+  
+  <!-- FontAwesome Ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --panel-dark: #151d30;
+      --card-dark: #1e293b;
+      --accent: #3b82f6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* BARRA DE NAVEGAÇÃO */
+    nav.main-nav {
+      background: var(--panel-dark); border-bottom: 1px solid var(--border-color); padding: 0 20px;
+      display: flex; justify-content: space-between; align-items: center; height: 60px; flex-shrink: 0; z-index: 1000;
+    }
+    .nav-brand { font-size: 1.1rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    .nav-tabs { display: flex; gap: 5px; }
+    .nav-tab-btn {
+      background: transparent; color: var(--text-muted); border: none; padding: 18px 14px; font-weight: 600;
+      cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; font-size: 0.85rem;
+    }
+    .nav-tab-btn:hover, .nav-tab-btn.active { color: var(--text-main); border-bottom-color: var(--accent); }
+
+    .app-screen { display: none; flex: 1; overflow-y: auto; }
+    .app-screen.active { display: flex; }
+
+    /* TELA: MEUS DOCUMENTOS */
+    #screen-docs { padding: 30px; flex-direction: column; max-width: 1100px; margin: 0 auto; width: 100%; }
+    .screen-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 10px 18px;
+      border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-icon {
+      background: var(--card-dark); color: var(--text-main); border: 1px solid var(--border-color);
+      padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-icon:hover, .btn-icon.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .doc-card {
+      background: var(--panel-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;
+      display: flex; flex-direction: column; gap: 10px; position: relative; transition: 0.2s; cursor: pointer;
+    }
+    .doc-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .doc-card-header { display: flex; justify-content: space-between; align-items: center; }
+    .doc-icon { font-size: 2rem; color: #ef4444; }
+    .doc-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* TELA: QUESTIONÁRIOS */
+    #screen-quiz { padding: 30px; flex-direction: column; max-width: 850px; margin: 0 auto; width: 100%; }
+    .quiz-card { background: var(--panel-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+    .form-control { width: 100%; background: var(--card-dark); border: 1px solid var(--border-color); color: white; padding: 8px 12px; border-radius: 6px; }
+
+    .quiz-item { background: var(--panel-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 15px; }
+    .quiz-option {
+      background: var(--card-dark); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 6px;
+      margin-top: 8px; cursor: pointer; transition: 0.2s; font-size: 0.88rem;
+    }
+    .quiz-option:hover { border-color: var(--accent); }
+    .quiz-option.correct { background: rgba(34, 197, 94, 0.2); border-color: var(--success); }
+    .quiz-option.incorrect { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); }
+
+    /* TELA: LEITOR DE PDF */
+    #screen-reader { flex-direction: column; height: calc(100vh - 60px); }
+    .reader-toolbar {
+      background: var(--panel-dark); border-bottom: 1px solid var(--border-color); padding: 8px 16px;
+      display: flex; justify-content: space-between; align-items: center; z-index: 10; flex-shrink: 0;
+    }
+    .reader-workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
+    #viewer-container { flex: 1; overflow: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; background: #070a12; }
+    
+    .pdf-page-wrapper { position: relative; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); background: white; }
+    
+    .pdf-page-wrapper.mode-select { cursor: text; }
+    .pdf-page-wrapper.mode-pen { 
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>') 0 24, pointer; 
+    }
+    .pdf-page-wrapper.mode-highlighter { 
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23facc15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>') 0 24, pointer; 
+    }
+    .pdf-page-wrapper.mode-eraser { 
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l9.6-9.6a1 1 0 0 1 1.4 0l4.3 4.3a1 1 0 0 1 0 1.4L8.4 21A1 1 0 0 1 7 21z"/><path d="M22 21H7"/></svg>') 0 24, pointer; 
+    }
+
+    .drawing-canvas { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; }
+    .drawing-canvas.active { pointer-events: auto; }
+    .textLayer { z-index: 2; opacity: 0.35; mix-blend-mode: multiply; }
+
+    /* SIDEBAR */
+    #sidebar {
+      width: 320px; background: var(--panel-dark); border-left: 1px solid var(--border-color);
+      display: flex; flex-direction: column; transition: margin-right 0.3s ease; margin-right: -320px;
+    }
+    #sidebar.open { margin-right: 0; }
+    .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
+    .sb-tab { flex: 1; padding: 10px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 0.8rem; }
+    .sb-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+    .sidebar-body { flex: 1; overflow-y: auto; padding: 12px; }
+
+    .hl-card, .ai-card { background: var(--card-dark); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; margin-bottom: 10px; font-size: 0.82rem; }
+    .hl-card { border-left: 3px solid #facc15; }
+    .ai-card { border-left: 3px solid var(--accent); }
+
+    /* POPOVER SELEÇÃO DE TEXTO */
+    #selection-popover {
+      position: absolute; display: none; background: #1e293b; border: 1px solid var(--border-color);
+      border-radius: 6px; padding: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 999; gap: 4px;
+    }
+    #selection-popover button { background: transparent; border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; display: flex; align-items: center; gap: 5px; }
+    #selection-popover button:hover { background: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA DE NAVEGAÇÃO SUPERIOR -->
+  <nav class="main-nav">
+    <div class="nav-brand"><i class="fa-solid fa-graduation-cap"></i> PDF Studio Pro</div>
+    <div class="nav-tabs">
+      <button class="nav-tab-btn active" id="tab-btn-docs" onclick="switchTab('docs')"><i class="fa-solid fa-folder-open"></i> Meus Documentos</button>
+      <button class="nav-tab-btn" id="tab-btn-quiz" onclick="switchTab('quiz')"><i class="fa-solid fa-list-check"></i> Questionários IA</button>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-icon" onclick="exportNotes()"><i class="fa-solid fa-file-export"></i> Exportar Notas</button>
+    </div>
+  </nav>
+
+  <!-- TELA 1: MEUS DOCUMENTOS -->
+  <div id="screen-docs" class="app-screen active">
+    <div class="screen-header">
+      <div>
+        <h2>Meus Documentos</h2>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Carregue e organize seus PDFs para estudo</p>
+      </div>
+      <label class="btn-primary">
+        <i class="fa-solid fa-plus"></i> Abrir PDF
+        <input type="file" id="pdf-input" accept="application/pdf" style="display:none;">
+      </label>
+    </div>
+    <div class="doc-grid" id="doc-grid"></div>
+  </div>
+
+  <!-- TELA 2: QUESTIONÁRIOS POR IA -->
+  <div id="screen-quiz" class="app-screen">
+    <h2>Gerador de Simulados & Questionários (Nível Concurso Público)</h2>
+    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">A IA criará questões inéditas baseadas no conteúdo do PDF ativo.</p>
+    
+    <div class="quiz-card">
+      <div class="form-group">
+        <label>Documento Ativo:</label>
+        <input type="text" id="quiz-doc-name" class="form-control" value="Nenhum PDF aberto" readonly>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div class="form-group" style="flex:1;">
+          <label>Quantidade de Questões:</label>
+          <select id="quiz-count" class="form-control">
+            <option value="5">5 Questões</option>
+            <option value="10" selected>10 Questões</option>
+            <option value="15">15 Questões</option>
+            <option value="20">20 Questões</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>Nível da Prova:</label>
+          <select id="quiz-difficulty" class="form-control">
+            <option value="Concurso Público (Cebraspe/FGV/Vunesp)" selected>Concurso Público</option>
+            <option value="Ensino Superior / Avançado">Ensino Superior / Avançado</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" style="width:100%; justify-content:center; margin-top:10px;" onclick="generateQuiz()">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Simulado
+      </button>
+    </div>
+
+    <div id="quiz-results"></div>
+  </div>
+
+  <!-- TELA 3: LEITOR DE PDF -->
+  <div id="screen-reader" class="app-screen">
+    <div class="reader-toolbar">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button class="btn-icon" onclick="switchTab('docs')"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+        <span id="current-doc-name" style="font-weight:600; font-size:0.88rem;">Documento</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:6px;">
+        <button class="btn-icon active" id="tool-select" onclick="setTool('select')"><i class="fa-solid fa-arrow-pointer"></i> Texto / Selecionar</button>
+        <button class="btn-icon" id="tool-pen" onclick="setTool('pen')"><i class="fa-solid fa-pen"></i> Caneta</button>
+        <button class="btn-icon" id="tool-highlighter" onclick="setTool('highlighter')"><i class="fa-solid fa-highlighter"></i> Marca-Texto</button>
+        <button class="btn-icon" id="tool-eraser" onclick="setTool('eraser')"><i class="fa-solid fa-eraser"></i> Borracha</button>
+        <input type="color" id="pen-color" value="#ef4444" style="border:none; background:none; width:26px; height:26px; cursor:pointer;" title="Cor da Caneta">
+      </div>
+
+      <div>
+        <button class="btn-icon" onclick="toggleSidebar()"><i class="fa-solid fa-bookmark"></i> Painel (<span id="hl-count">0</span>)</button>
+      </div>
+    </div>
+
+    <div class="reader-workspace">
+      <div id="viewer-container"></div>
+
+      <aside id="sidebar">
+        <div class="sidebar-tabs">
+          <button class="sb-tab active" id="tab-btn-hl" onclick="switchSidebarTab('hl')">Destaques</button>
+          <button class="sb-tab" id="tab-btn-ai" onclick="switchSidebarTab('ai')">Chat IA</button>
+        </div>
+        <div class="sidebar-body" id="sidebar-content"></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- MENU POPOVER DE SELEÇÃO DE TEXTO -->
+  <div id="selection-popover">
+    <button onclick="createHighlight()"><i class="fa-solid fa-highlighter" style="color:#facc15;"></i> Destacar</button>
+    <button onclick="askAI('explain')"><i class="fa-solid fa-brain" style="color:#60a5fa;"></i> Explicar IA</button>
+    <button onclick="askAI('summarize')"><i class="fa-solid fa-compress" style="color:#34d399;"></i> Resumir IA</button>
+  </div>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    let currentDocName = "";
+    let currentDocText = "";
+    let pdfArrayBuffer = null;
+    let selectedText = "";
+    let selectedPageNum = 1;
+    let activeTool = 'select';
+    let highlights = [];
+    let aiNotes = [];
+    let loadedDocsList = [];
+    let currentSidebarTab = 'hl';
+    let db = null;
+
+    // BANCO DE DADOS INDEXEDDB PARA SALVAR O PDF REAL NO NAVEGADOR
+    const initDB = () => {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open("PDFStudioStorage", 1);
+        request.onupgradeneeded = (e) => {
+          db = e.target.result;
+          if (!db.objectStoreNames.contains("pdfFiles")) {
+            db.createObjectStore("pdfFiles", { keyPath: "name" });
+          }
+        };
+        request.onsuccess = (e) => { db = e.target.result; resolve(); };
+        request.onerror = (e) => reject(e);
+      });
+    };
+
+    const savePDFToDB = async (name, buffer) => {
+      if(!db) await initDB();
+      const tx = db.transaction("pdfFiles", "readwrite");
+      tx.objectStore("pdfFiles").put({ name: name, buffer: buffer });
+    };
+
+    const getPDFFromDB = async (name) => {
+      if(!db) await initDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction("pdfFiles", "readonly");
+        const req = tx.objectStore("pdfFiles").get(name);
+        req.onsuccess = () => resolve(req.result ? req.result.buffer : null);
+        req.onerror = () => resolve(null);
+      });
+    };
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initDB();
+      loadedDocsList = JSON.parse(localStorage.getItem('pdf_docs_list') || '[]');
+      renderDocsGrid();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape') setTool('select');
+    });
+
+    function switchTab(tab) {
+      document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+      
+      if(tab === 'docs') {
+        document.getElementById('screen-docs').classList.add('active');
+        document.getElementById('tab-btn-docs').classList.add('active');
+      } else if(tab === 'quiz') {
+        document.getElementById('screen-quiz').classList.add('active');
+        document.getElementById('tab-btn-quiz').classList.add('active');
+        document.getElementById('quiz-doc-name').value = currentDocName || "Nenhum PDF aberto";
+      }
+    }
+
+    document.getElementById('pdf-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      currentDocName = file.name;
+      pdfArrayBuffer = await file.arrayBuffer();
+      
+      await savePDFToDB(currentDocName, pdfArrayBuffer);
+
+      if(!loadedDocsList.includes(file.name)) {
+        loadedDocsList.push(file.name);
+        localStorage.setItem('pdf_docs_list', JSON.stringify(loadedDocsList));
+      }
+      
+      renderDocsGrid();
+      openCurrentDoc(currentDocName);
+    });
+
+    function renderDocsGrid() {
+      const grid = document.getElementById('doc-grid');
+      grid.innerHTML = '';
+      
+      if(loadedDocsList.length === 0) {
+        grid.innerHTML = `<p style="color:var(--text-muted); grid-column:1/-1;">Nenhum documento aberto ainda. Clique em "Abrir PDF" para começar!</p>`;
+        return;
+      }
+
+      loadedDocsList.forEach(name => {
+        const card = document.createElement('div');
+        card.className = 'doc-card';
+        card.onclick = () => openCurrentDoc(name);
+        card.innerHTML = `
+          <div class="doc-card-header">
+            <i class="fa-solid fa-file-pdf doc-icon"></i>
+            <button style="background:none; border:none; color:red; cursor:pointer;" onclick="deleteDoc(event, '${name}')">✕</button>
+          </div>
+          <div class="doc-title">${name}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function deleteDoc(e, name) {
+      e.stopPropagation();
+      loadedDocsList = loadedDocsList.filter(d => d !== name);
+      localStorage.setItem('pdf_docs_list', JSON.stringify(loadedDocsList));
+      
+      if(db) {
+        const tx = db.transaction("pdfFiles", "readwrite");
+        tx.objectStore("pdfFiles").delete(name);
+      }
+      renderDocsGrid();
+    }
+
+    async function openCurrentDoc(docName) {
+      currentDocName = docName || currentDocName;
+      
+      pdfArrayBuffer = await getPDFFromDB(currentDocName);
+
+      if(!pdfArrayBuffer) {
+        alert("O arquivo PDF salvo não foi encontrado. Por favor, abra-o novamente.");
+        return;
+      }
+
+      document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-reader').classList.add('active');
+      document.getElementById('current-doc-name').textContent = currentDocName;
+
+      highlights = JSON.parse(localStorage.getItem(`hl_${currentDocName}`) || '[]');
+      updateHighlightsList();
+
+      const pdf = await pdfjsLib.getDocument({ data: pdfArrayBuffer.slice(0) }).promise;
+      const container = document.getElementById('viewer-container');
+      container.innerHTML = '';
+      currentDocText = "";
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.25 });
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'pdf-page-wrapper mode-select';
+        wrapper.dataset.page = i;
+        wrapper.style.width = `${viewport.width}px`;
+        wrapper.style.height = `${viewport.height}px`;
+
+        const canvas = document.createElement('canvas');
+        canvas.height = viewport.height; canvas.width = viewport.width;
+        wrapper.appendChild(canvas);
+
+        const drawCanvas = document.createElement('canvas');
+        drawCanvas.className = 'drawing-canvas';
+        drawCanvas.height = viewport.height; drawCanvas.width = viewport.width;
+        setupDrawing(drawCanvas, i);
+        wrapper.appendChild(drawCanvas);
+
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+        const textContent = await page.getTextContent();
+        currentDocText += textContent.items.map(item => item.str).join(' ') + '\n';
+
+        const textLayer = document.createElement('div');
+        textLayer.className = 'textLayer';
+        wrapper.appendChild(textLayer);
+        pdfjsLib.renderTextLayer({ textContentSource: textContent, container: textLayer, viewport: viewport, textDivs: [] });
+
+        container.appendChild(wrapper);
+      }
+      
+      setTool('select');
+    }
+
+    function setTool(tool) {
+      activeTool = tool;
+      
+      document.querySelectorAll('.reader-toolbar .btn-icon').forEach(btn => btn.classList.remove('active'));
+      const btnMap = { select: 'tool-select', pen: 'tool-pen', highlighter: 'tool-highlighter', eraser: 'tool-eraser' };
+      if(btnMap[tool]) document.getElementById(btnMap[tool])?.classList.add('active');
+
+      document.querySelectorAll('.pdf-page-wrapper').forEach(wrapper => {
+        wrapper.classList.remove('mode-select', 'mode-pen', 'mode-highlighter', 'mode-eraser');
+        wrapper.classList.add(`mode-${tool}`);
+
+        const canvas = wrapper.querySelector('.drawing-canvas');
+        if (canvas) {
+          if (tool === 'select') {
+            canvas.classList.remove('active');
+          } else {
+            canvas.classList.add('active');
+          }
+        }
+      });
+    }
+
+    document.addEventListener('mouseup', (e) => {
+      if (activeTool !== 'select') return;
+
+      const selection = window.getSelection();
+      const text = selection.toString().trim();
+      const popover = document.getElementById('selection-popover');
+
+      if (text.length > 0) {
+        selectedText = text;
+        const pageWrapper = selection.getRangeAt(0).startContainer.parentElement?.closest('.pdf-page-wrapper');
+        selectedPageNum = pageWrapper ? parseInt(pageWrapper.dataset.page) : 1;
+
+        popover.style.top = `${e.pageY - 45}px`;
+        popover.style.left = `${e.pageX - 50}px`;
+        popover.style.display = 'flex';
+      } else {
+        popover.style.display = 'none';
+      }
+    });
+
+    function createHighlight() {
+      if (!selectedText) return;
+      highlights.push({ id: Date.now(), text: selectedText, page: selectedPageNum, comment: '' });
+      localStorage.setItem(`hl_${currentDocName}`, JSON.stringify(highlights));
+      updateHighlightsList();
+      document.getElementById('selection-popover').style.display = 'none';
+      window.getSelection().removeAllRanges();
+      document.getElementById('sidebar').classList.add('open');
+      switchSidebarTab('hl');
+    }
+
+    function updateHighlightsList() {
+      const container = document.getElementById('sidebar-content');
+      document.getElementById('hl-count').textContent = highlights.length;
+      if(currentSidebarTab !== 'hl') return;
+      container.innerHTML = '';
+      highlights.forEach(h => {
+        const card = document.createElement('div');
+        card.className = 'hl-card';
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size:0.75rem; margin-bottom:4px;">
+            <span>Página ${h.page}</span>
+            <button style="background:none; border:none; color:red; cursor:pointer;" onclick="deleteHl(${h.id})">✕</button>
+          </div>
+          <p>"${h.text}"</p>
+          <input type="text" placeholder="Adicionar nota..." value="${h.comment || ''}" oninput="updateComment(${h.id}, this.value)" style="width:100%; background:#0f172a; border:1px solid var(--border-color); color:white; padding:4px; border-radius:4px; margin-top:5px;">
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function deleteHl(id) {
+      highlights = highlights.filter(h => h.id !== id);
+      localStorage.setItem(`hl_${currentDocName}`, JSON.stringify(highlights));
+      updateHighlightsList();
+    }
+
+    function updateComment(id, txt) {
+      const h = highlights.find(item => item.id === id);
+      if(h) { h.comment = txt; localStorage.setItem(`hl_${currentDocName}`, JSON.stringify(highlights)); }
+    }
+
+    function setupDrawing(canvas, pageNum) {
+      const ctx = canvas.getContext('2d');
+      let isDrawing = false;
+
+      const savedDrawing = localStorage.getItem(`draw_${currentDocName}_p${pageNum}`);
+      if (savedDrawing) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = savedDrawing;
+      }
+
+      function saveCanvasState() {
+        localStorage.setItem(`draw_${currentDocName}_p${pageNum}`, canvas.toDataURL());
+      }
+
+      canvas.addEventListener('mousedown', (e) => {
+        if (activeTool === 'select') return;
+        isDrawing = true;
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX, e.offsetY);
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing || activeTool === 'select') return;
+        const color = document.getElementById('pen-color').value;
+
+        if (activeTool === 'eraser') {
+          ctx.clearRect(e.offsetX - 12, e.offsetY - 12, 24, 24);
+        } else {
+          ctx.strokeStyle = activeTool === 'highlighter' ? color + '55' : color;
+          ctx.lineWidth = activeTool === 'highlighter' ? 14 : 3;
+          ctx.lineCap = 'round';
+          ctx.lineTo(e.offsetX, e.offsetY);
+          ctx.stroke();
+        }
+      });
+
+      canvas.addEventListener('mouseup', () => {
+        if(isDrawing) { isDrawing = false; saveCanvasState(); }
+      });
+      canvas.addEventListener('mouseleave', () => {
+        if(isDrawing) { isDrawing = false; saveCanvasState(); }
+      });
+    }
+
+    // GEMINI IA (USANDO 3.6 FLASH E O SEU TOKEN)
+    async function fetchAI(promptText) {
+      const API_KEY_FIXA = "AQ.Ab8RN6LN_aTQ-ULVFLLL37hj0hN-EBdEcHipHqM4lKrl6P-FBA";
+      
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${API_KEY_FIXA}`;
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+        });
+        const data = await res.json();
+        if (data.error) return `Erro IA: ${data.error.message}`;
+        return data.candidates[0].content.parts[0].text;
+      } catch(e) {
+        return "Erro de conexão ao comunicar com a IA.";
+      }
+    }
+
+    async function askAI(promptType) {
+      document.getElementById('selection-popover').style.display = 'none';
+      document.getElementById('sidebar').classList.add('open');
+      switchSidebarTab('ai');
+
+      const prompt = promptType === 'explain' 
+        ? `Explique de forma simples o seguinte trecho: "${selectedText}"`
+        : `Faça um resumo direto do seguinte trecho: "${selectedText}"`;
+
+      const container = document.getElementById('sidebar-content');
+      const tempId = Date.now();
+      container.innerHTML += `<div class="ai-card" id="temp-${tempId}"><strong>🤖 Pensando...</strong></div>`;
+
+      const response = await fetchAI(prompt);
+      document.getElementById(`temp-${tempId}`)?.remove();
+      
+      if(response) {
+        aiNotes.push({ prompt: promptType, text: response });
+        renderAiNotes();
+      }
+    }
+
+    function renderAiNotes() {
+      const container = document.getElementById('sidebar-content');
+      if(currentSidebarTab !== 'ai') return;
+      container.innerHTML = '';
+      aiNotes.forEach(n => {
+        const card = document.createElement('div');
+        card.className = 'ai-card';
+        card.innerHTML = `<strong>🤖 IA (${n.prompt === 'explain' ? 'Explicação' : 'Resumo'})</strong><p style="margin-top:4px;">${n.text}</p>`;
+        container.appendChild(card);
+      });
+    }
+
+    async function generateQuiz() {
+      if(!currentDocText || currentDocText.trim().length < 20) { 
+        alert("Por favor, abra um PDF com texto legível primeiro para a IA criar o simulado!"); 
+        return; 
+      }
+
+      const count = document.getElementById('quiz-count').value;
+      const diff = document.getElementById('quiz-difficulty').value;
+      const resultsDiv = document.getElementById('quiz-results');
+      resultsDiv.innerHTML = `<p style="color:var(--accent); font-weight:bold;"><i class="fa-solid fa-spinner fa-spin"></i> A IA está criando ${count} questões no nível de Concurso Público...</p>`;
+
+      const prompt = `Você é uma banca examinadora de CONCURSO PÚBLICO (estilo Cebraspe, FGV, Vunesp). 
+Com base estrita no texto a seguir: "${currentDocText.substring(0, 7000)}", crie exatas ${count} questões de múltipla escolha.
+
+REGRAS:
+- Nível de Dificuldade: ${diff} (questões interpretativas, com pegadinhas e auto-explicativas).
+- Formato de resposta: Responda EXCLUSIVAMENTE em formato JSON (array de objetos), sem nenhum texto fora do JSON.
+- Cada objeto deve seguir exatamente este formato:
+[
+  {
+    "question": "Enunciado da questão no padrão de prova de concurso",
+    "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
+    "answerIndex": 0,
+    "explanation": "Gabarito comentado fundamentado no texto do documento."
+  }
+]`;
+
+      const aiRes = await fetchAI(prompt);
+      if(!aiRes) { resultsDiv.innerHTML = `<p style="color:red;">Erro ao obter resposta da IA.</p>`; return; }
+
+      try {
+        const cleanJson = aiRes.replace(/```json|```/g, '').trim();
+        const questions = JSON.parse(cleanJson);
+        
+        resultsDiv.innerHTML = '';
+        questions.forEach((q, idx) => {
+          const qEl = document.createElement('div');
+          qEl.className = 'quiz-item';
+          qEl.innerHTML = `
+            <h4>${idx + 1}. ${q.question}</h4>
+            ${q.options.map((opt, i) => `
+              <div class="quiz-option" onclick="checkAnswer(this, ${i === q.answerIndex}, '${q.explanation.replace(/'/g, "\\'")}')">
+                ${opt}
+              </div>
+            `).join('')}
+            <div class="quiz-exp" style="display:none; margin-top:10px; font-size:0.85rem; color:var(--accent);"></div>
+          `;
+          resultsDiv.appendChild(qEl);
+        });
+      } catch(e) {
+        resultsDiv.innerHTML = `<p style="color:red;">A IA gerou a resposta com formatação fora do padrão. Clique em 'Gerar Simulado' novamente para reprocessar.</p>`;
+      }
+    }
+
+    function checkAnswer(el, isCorrect, exp) {
+      const parent = el.parentElement;
+      parent.querySelectorAll('.quiz-option').forEach(o => o.style.pointerEvents = 'none');
+      if(isCorrect) { el.classList.add('correct'); }
+      else { el.classList.add('incorrect'); }
+      const expDiv = parent.querySelector('.quiz-exp');
+      expDiv.innerHTML = `<strong>Gabarito Comentado:</strong> ${exp}`;
+      expDiv.style.display = 'block';
+    }
+
+    function exportNotes() {
+      if(highlights.length === 0) { alert("Nenhum destaque salvo para exportar!"); return; }
+      let content = `=== NOTAS DE ESTUDO: ${currentDocName} ===\n\n`;
+      highlights.forEach(h => {
+        content += `[Página ${h.page}]\nTrecho: "${h.text}"\nNota: ${h.comment || 'Nenhuma'}\n\n`;
+      });
+      const blob = new Blob([content], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Notas_${currentDocName}.txt`;
+      a.click();
+    }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+    function switchSidebarTab(tab) {
+      currentSidebarTab = tab;
+      document.getElementById('tab-btn-hl').classList.toggle('active', tab === 'hl');
+      document.getElementById('tab-btn-ai').classList.toggle('active', tab === 'ai');
+      if(tab === 'hl') updateHighlightsList();
+      else renderAiNotes();
+    }
+  </script>
+</body>
+</html>
