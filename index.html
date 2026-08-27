@@ -444,8 +444,13 @@
 
         const canvas = wrapper.querySelector('.drawing-canvas');
         if (canvas) {
-          if (tool === 'select') canvas.classList.remove('active');
-          else canvas.classList.add('active');
+          if (tool === 'select') {
+            canvas.classList.remove('active');
+            canvas.style.pointerEvents = 'none'; // Libera o toque para selecionar texto nativamente no celular
+          } else {
+            canvas.classList.add('active');
+            canvas.style.pointerEvents = 'auto'; // Captura o toque para desenhar ou destacar
+          }
         }
       });
     }
@@ -526,31 +531,87 @@
         localStorage.setItem(`draw_${currentDocName}_p${pageNum}`, canvas.toDataURL());
       }
 
-      canvas.addEventListener('mousedown', (e) => {
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      }
+
+      function startAction(e) {
         if (activeTool === 'select') return;
         isDrawing = true;
+        const pos = getPos(e);
         ctx.beginPath();
-        ctx.moveTo(e.offsetX, e.offsetY);
-      });
+        ctx.moveTo(pos.x, pos.y);
+        if (e.type === 'touchstart') e.preventDefault();
+      }
 
-      canvas.addEventListener('mousemove', (e) => {
+      function moveAction(e) {
         if (!isDrawing || activeTool === 'select') return;
+        const pos = getPos(e);
         const color = document.getElementById('pen-color').value;
 
         if (activeTool === 'eraser') {
-          ctx.clearRect(e.offsetX - 12, e.offsetY - 12, 24, 24);
+          ctx.clearRect(pos.x - 12, pos.y - 12, 24, 24);
         } else {
           ctx.strokeStyle = activeTool === 'highlighter' ? color + '55' : color;
           ctx.lineWidth = activeTool === 'highlighter' ? 14 : 3;
           ctx.lineCap = 'round';
-          ctx.lineTo(e.offsetX, e.offsetY);
+          ctx.lineTo(pos.x, pos.y);
           ctx.stroke();
         }
-      });
+        if (e.type === 'touchmove') e.preventDefault();
+      }
 
-      canvas.addEventListener('mouseup', () => { if(isDrawing) { isDrawing = false; saveCanvasState(); } });
-      canvas.addEventListener('mouseleave', () => { if(isDrawing) { isDrawing = false; saveCanvasState(); } });
+      function endAction() {
+        if (isDrawing) {
+          isDrawing = false;
+          saveCanvasState();
+        }
+      }
+
+      canvas.addEventListener('mousedown', startAction);
+      canvas.addEventListener('mousemove', moveAction);
+      canvas.addEventListener('mouseup', endAction);
+      canvas.addEventListener('mouseleave', endAction);
+
+      canvas.addEventListener('touchstart', startAction, { passive: false });
+      canvas.addEventListener('touchmove', moveAction, { passive: false });
+      canvas.addEventListener('touchend', endAction);
     }
+
+    // Navegação estilo livro / leitura mobile (Toque nas margens ou swipe)
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    document.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      if (activeTool !== 'select') return;
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const diffX = touchStartX - touchEndX;
+      const diffY = touchStartY - touchEndY;
+      const screenWidth = window.innerWidth;
+      const container = document.getElementById('viewer-container');
+
+      if (Math.abs(diffX) > 60 && Math.abs(diffY) < 100) {
+        if (diffX > 0) {
+          container.scrollBy({ left: 0, top: window.innerHeight * 0.75, behavior: 'smooth' });
+        } else {
+          container.scrollBy({ left: 0, top: -window.innerHeight * 0.75, behavior: 'smooth' });
+        }
+      }
+    }, { passive: true });
 
     function downloadCurrentPDF() {
       if (!pdfArrayBuffer) {
