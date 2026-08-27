@@ -83,32 +83,39 @@
     .quiz-option.correct { background: rgba(34, 197, 94, 0.2); border-color: var(--success); }
     .quiz-option.incorrect { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); }
 
-    /* TELA: LEITOR DE PDF OTIMIZADA PARA MOBILE */
+    /* TELA: LEITOR DE PDF OTIMIZADA PARA MOBILE - MODO LIVRO */
     #screen-reader { flex-direction: column; height: calc(100vh - 55px); }
     .reader-toolbar {
       background: var(--panel-dark); border-bottom: 1px solid var(--border-color); padding: 6px 10px;
       display: flex; justify-content: space-between; align-items: center; z-index: 10; flex-shrink: 0; gap: 5px; flex-wrap: wrap;
     }
     .reader-workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
-    #viewer-container { flex: 1; overflow: auto; padding: 10px; display: flex; flex-direction: column; align-items: center; background: #070a12; -webkit-overflow-scrolling: touch; }
     
-    .pdf-page-wrapper { position: relative; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); background: white; max-width: 100%; }
-    .pdf-page-wrapper canvas { max-width: 100%; height: auto !important; display: block; }
+    /* Container em Modo Livro: Mostra apenas UMA página por vez centralizada */
+    #viewer-container { 
+      flex: 1; overflow: hidden; position: relative; background: #070a12; 
+      display: flex; justify-content: center; align-items: center;
+    }
     
-    .pdf-page-wrapper.mode-select { cursor: text; }
-    .pdf-page-wrapper.mode-pen { 
-      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>') 0 24, pointer; 
+    .pdf-page-wrapper { 
+      position: absolute; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.8); background: white; 
+      max-width: 100%; max-height: 100%; justify-content: center; align-items: center;
     }
-    .pdf-page-wrapper.mode-highlighter { 
-      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23facc15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>') 0 24, pointer; 
-    }
-    .pdf-page-wrapper.mode-eraser { 
-      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l9.6-9.6a1 1 0 0 1 1.4 0l4.3 4.3a1 1 0 0 1 0 1.4L8.4 21A1 1 0 0 1 7 21z"/><path d="M22 21H7"/></svg>') 0 24, pointer; 
-    }
-
+    .pdf-page-wrapper.active-page { display: flex; }
+    
+    .pdf-page-inner { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    .pdf-page-inner canvas { max-width: 100%; max-height: calc(100vh - 120px); width: auto !important; height: auto !important; display: block; object-fit: contain; }
+    
     .drawing-canvas { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; width: 100%; height: 100%; }
     .drawing-canvas.active { pointer-events: auto; }
-    .textLayer { z-index: 2; opacity: 0.35; mix-blend-mode: multiply; }
+    
+    /* Camada de texto perfeitamente alinhada e interativa para seleção */
+    .textLayer { 
+      position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; 
+      opacity: 0.2; line-height: 1.0; z-index: 3; pointer-events: auto !important; 
+      -webkit-user-select: text; user-select: text;
+    }
+    .textLayer > span { color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0% 0%; }
 
     /* SIDEBAR RESPONSIVA */
     #sidebar {
@@ -219,10 +226,10 @@
       </div>
 
       <div style="display:flex; align-items:center; gap:4px;">
-        <button class="btn-icon active" id="tool-select" onclick="setTool('select')"><i class="fa-solid fa-arrow-pointer"></i></button>
-        <button class="btn-icon" id="tool-pen" onclick="setTool('pen')"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn-icon" id="tool-highlighter" onclick="setTool('highlighter')"><i class="fa-solid fa-highlighter"></i></button>
-        <button class="btn-icon" id="tool-eraser" onclick="setTool('eraser')"><i class="fa-solid fa-eraser"></i></button>
+        <button class="btn-icon active" id="tool-select" onclick="setTool('select')"><i class="fa-solid fa-arrow-pointer" title="Selecionar / Livro"></i></button>
+        <button class="btn-icon" id="tool-pen" onclick="setTool('pen')"><i class="fa-solid fa-pen" title="Caneta"></i></button>
+        <button class="btn-icon" id="tool-highlighter" onclick="setTool('highlighter')"><i class="fa-solid fa-highlighter" title="Marcador"></i></button>
+        <button class="btn-icon" id="tool-eraser" onclick="setTool('eraser')"><i class="fa-solid fa-eraser" title="Borracha"></i></button>
         <input type="color" id="pen-color" value="#ef4444" style="border:none; background:none; width:22px; height:22px; cursor:pointer;" title="Cor">
       </div>
 
@@ -257,6 +264,9 @@
 
     let currentDocName = "";
     let currentDocText = "";
+    let pdfDoc = null;
+    let totalPages = 0;
+    let currentPageNum = 1;
     let pdfArrayBuffer = null;
     let selectedText = "";
     let selectedPageNum = 1;
@@ -301,10 +311,6 @@
       await initDB();
       loadedDocsList = JSON.parse(localStorage.getItem('pdf_docs_list') || '[]');
       renderDocsGrid();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if(e.key === 'Escape') setTool('select');
     });
 
     function switchTab(tab) {
@@ -386,35 +392,43 @@
 
       document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
       document.getElementById('screen-reader').classList.add('active');
-      document.getElementById('current-doc-name').textContent = currentDocName;
+      document.getElementById('current-doc-name').textContent = `${currentDocName} (Pág 1)`;
 
       highlights = JSON.parse(localStorage.getItem(`hl_${currentDocName}`) || '[]');
       updateHighlightsList();
 
-      const pdf = await pdfjsLib.getDocument({ data: pdfArrayBuffer.slice(0) }).promise;
+      pdfDoc = await pdfjsLib.getDocument({ data: pdfArrayBuffer.slice(0) }).promise;
+      totalPages = pdfDoc.numPages;
+      currentPageNum = 1;
+      
       const container = document.getElementById('viewer-container');
       container.innerHTML = '';
       currentDocText = "";
 
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1.25 });
+      for (let i = 1; i <= totalPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale: 1.35 });
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'pdf-page-wrapper mode-select';
+        wrapper.className = `pdf-page-wrapper ${i === 1 ? 'active-page' : ''}`;
         wrapper.dataset.page = i;
         wrapper.style.width = `${viewport.width}px`;
         wrapper.style.height = `${viewport.height}px`;
 
+        const inner = document.createElement('div');
+        inner.className = 'pdf-page-inner';
+        inner.style.width = `${viewport.width}px`;
+        inner.style.height = `${viewport.height}px`;
+
         const canvas = document.createElement('canvas');
         canvas.height = viewport.height; canvas.width = viewport.width;
-        wrapper.appendChild(canvas);
+        inner.appendChild(canvas);
 
         const drawCanvas = document.createElement('canvas');
         drawCanvas.className = 'drawing-canvas';
         drawCanvas.height = viewport.height; drawCanvas.width = viewport.width;
         setupDrawing(drawCanvas, i);
-        wrapper.appendChild(drawCanvas);
+        inner.appendChild(drawCanvas);
 
         await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
 
@@ -423,14 +437,33 @@
 
         const textLayer = document.createElement('div');
         textLayer.className = 'textLayer';
-        wrapper.appendChild(textLayer);
-        pdfjsLib.renderTextLayer({ textContentSource: textContent, container: textLayer, viewport: viewport, textDivs: [] });
+        inner.appendChild(textLayer);
+        await pdfjsLib.renderTextLayer({ textContentSource: textContent, container: textLayer, viewport: viewport, textDivs: [] }).promise;
 
+        wrapper.appendChild(inner);
         container.appendChild(wrapper);
       }
       
       setTool('select');
     }
+
+    function goToPage(pageNum) {
+      if (pageNum < 1 || pageNum > totalPages) return;
+      currentPageNum = pageNum;
+      document.getElementById('current-doc-name').textContent = `${currentDocName} (Pág ${currentPageNum}/${totalPages})`;
+      
+      document.querySelectorAll('.pdf-page-wrapper').forEach(w => {
+        if (parseInt(w.dataset.page) === currentPageNum) {
+          w.classList.add('active-page');
+        } else {
+          w.classList.remove('active-page');
+        }
+      });
+      document.getElementById('selection-popover').style.display = 'none';
+    }
+
+    function nextPage() { goToPage(currentPageNum + 1); }
+    function prevPage() { goToPage(currentPageNum - 1); }
 
     function setTool(tool) {
       activeTool = tool;
@@ -439,17 +472,18 @@
       if(btnMap[tool]) document.getElementById(btnMap[tool])?.classList.add('active');
 
       document.querySelectorAll('.pdf-page-wrapper').forEach(wrapper => {
-        wrapper.classList.remove('mode-select', 'mode-pen', 'mode-highlighter', 'mode-eraser');
-        wrapper.classList.add(`mode-${tool}`);
-
         const canvas = wrapper.querySelector('.drawing-canvas');
-        if (canvas) {
+        const textLayer = wrapper.querySelector('.textLayer');
+        
+        if (canvas && textLayer) {
           if (tool === 'select') {
             canvas.classList.remove('active');
-            canvas.style.pointerEvents = 'none'; // Libera o toque para selecionar texto nativamente no celular
+            canvas.style.pointerEvents = 'none';
+            textLayer.style.pointerEvents = 'auto';
           } else {
             canvas.classList.add('active');
-            canvas.style.pointerEvents = 'auto'; // Captura o toque para desenhar ou destacar
+            canvas.style.pointerEvents = 'auto';
+            textLayer.style.pointerEvents = 'none'; // Desativa texto para desenhar sem interferência exata
           }
         }
       });
@@ -464,7 +498,7 @@
       if (text.length > 0) {
         selectedText = text;
         const pageWrapper = selection.getRangeAt(0).startContainer.parentElement?.closest('.pdf-page-wrapper');
-        selectedPageNum = pageWrapper ? parseInt(pageWrapper.dataset.page) : 1;
+        selectedPageNum = pageWrapper ? parseInt(pageWrapper.dataset.page) : currentPageNum;
 
         popover.style.top = `${e.pageY - 45}px`;
         popover.style.left = `${e.pageX - 50}px`;
@@ -472,6 +506,23 @@
       } else {
         popover.style.display = 'none';
       }
+    });
+
+    // Suporte a toque/seleção em dispositivos móveis
+    document.addEventListener('touchend', (e) => {
+      if (activeTool !== 'select') return;
+      setTimeout(() => {
+        const selection = window.getSelection();
+        const text = selection ? selection.toString().trim() : "";
+        const popover = document.getElementById('selection-popover');
+        if (text.length > 0) {
+          selectedText = text;
+          const touch = e.changedTouches[0];
+          popover.style.top = `${touch.pageY - 55}px`;
+          popover.style.left = `${Math.min(touch.pageX - 60, window.innerWidth - 180)}px`;
+          popover.style.display = 'flex';
+        }
+      }, 200);
     });
 
     function createHighlight() {
@@ -556,7 +607,8 @@
         const color = document.getElementById('pen-color').value;
 
         if (activeTool === 'eraser') {
-          ctx.clearRect(pos.x - 12, pos.y - 12, 24, 24);
+          // Borracha com tamanho ampliado (36x36) para apagar bem no celular
+          ctx.clearRect(pos.x - 18, pos.y - 18, 36, 36);
         } else {
           ctx.strokeStyle = activeTool === 'highlighter' ? color + '55' : color;
           ctx.lineWidth = activeTool === 'highlighter' ? 14 : 3;
@@ -584,7 +636,7 @@
       canvas.addEventListener('touchend', endAction);
     }
 
-    // Navegação estilo livro / leitura mobile (Toque nas margens ou swipe)
+    // Modo Livro: Navegação por Toque (Swipe lateral ou toque nas margens)
     let touchStartX = 0;
     let touchStartY = 0;
 
@@ -596,19 +648,26 @@
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
-      if (activeTool !== 'select') return;
+      if (activeTool !== 'select' || e.changedTouches.length === 0) return;
       const touchEndX = e.changedTouches[0].clientX;
       const touchEndY = e.changedTouches[0].clientY;
       const diffX = touchStartX - touchEndX;
       const diffY = touchStartY - touchEndY;
       const screenWidth = window.innerWidth;
-      const container = document.getElementById('viewer-container');
 
-      if (Math.abs(diffX) > 60 && Math.abs(diffY) < 100) {
+      // Se for gesto horizontal limpo (swipe)
+      if (Math.abs(diffX) > 50 && Math.abs(diffY) < 100) {
         if (diffX > 0) {
-          container.scrollBy({ left: 0, top: window.innerHeight * 0.75, behavior: 'smooth' });
+          nextPage(); // Passa para a próxima página
         } else {
-          container.scrollBy({ left: 0, top: -window.innerHeight * 0.75, behavior: 'smooth' });
+          prevPage(); // Volta para a página anterior
+        }
+      } else if (Math.abs(diffX) < 15 && Math.abs(diffY) < 15) {
+        // Toque rápido seco nas margens laterais da tela
+        if (touchStartX < screenWidth * 0.22) {
+          prevPage();
+        } else if (touchStartX > screenWidth * 0.78) {
+          nextPage();
         }
       }
     }, { passive: true });
