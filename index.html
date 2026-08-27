@@ -83,7 +83,7 @@
     .quiz-option.correct { background: rgba(34, 197, 94, 0.2); border-color: var(--success); }
     .quiz-option.incorrect { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); }
 
-    /* TELA: LEITOR DE PDF OTIMIZADA PARA MOBILE - MODO LIVRO */
+    /* TELA: LEITOR DE PDF */
     #screen-reader { flex-direction: column; height: calc(100vh - 55px); }
     .reader-toolbar {
       background: var(--panel-dark); border-bottom: 1px solid var(--border-color); padding: 6px 10px;
@@ -91,46 +91,61 @@
     }
     .reader-workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
     
-    /* Container em Modo Livro: Mostra apenas UMA página por vez centralizada */
     #viewer-container { 
-      flex: 1; overflow: hidden; position: relative; background: #070a12; 
-      display: flex; justify-content: center; align-items: center;
+      flex: 1; overflow-y: auto; position: relative; background: #070a12; 
+      display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px;
     }
     
     .pdf-page-wrapper { 
-      position: absolute; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.8); background: white; 
-      max-width: 100%; max-height: 100%; justify-content: center; align-items: center;
+      position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.8); background: white; 
+      display: flex; justify-content: center; align-items: center;
     }
-    .pdf-page-wrapper.active-page { display: flex; }
     
     .pdf-page-inner { 
       position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; 
     }
     
-    /* Garante que o canvas utilize explicitamente largura/altura de exibição correta e proporcional ao render */
     .pdf-page-inner canvas { 
       display: block; 
       max-width: 100%; 
-      max-height: calc(100vh - 120px); 
-      width: auto; 
-      height: auto; 
-      object-fit: contain; 
+      height: auto !important; 
     }
     
-    /* Caneta desenha na escala interna exata do canvas (mapeada por coordenadas relativas reais) */
     .drawing-canvas { 
       position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; 
       width: 100%; height: 100%; 
     }
     .drawing-canvas.active { pointer-events: auto; touch-action: none; }
     
-    /* Camada de texto perfeitamente alinhada e interativa para seleção */
     .textLayer { 
       position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; 
       opacity: 0.2; line-height: 1.0; z-index: 3; pointer-events: auto !important; 
       -webkit-user-select: text; user-select: text;
     }
     .textLayer > span { color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0% 0%; }
+
+    /* MODO LIVRO EXCLUSIVO PARA CELULAR (Telas <= 768px) */
+    @media (max-width: 768px) {
+      #viewer-container { 
+        overflow: hidden; padding: 0; justify-content: center; align-items: center; 
+      }
+      .pdf-page-wrapper { 
+        position: absolute; display: none; width: 100% !important; height: 100% !important; max-height: 100%; justify-content: center; align-items: center; 
+      }
+      .pdf-page-wrapper.active-page { display: flex; }
+      .pdf-page-inner canvas { 
+        max-height: calc(100vh - 120px); 
+        width: auto !important; 
+        object-fit: contain; 
+      }
+      .nav-brand span { display: none; }
+      .nav-tab-btn { padding: 16px 8px; font-size: 0.75rem; }
+      .reader-toolbar { padding: 4px 6px; justify-content: center; }
+      .reader-toolbar > div { gap: 4px; }
+      .btn-icon { padding: 5px 8px; font-size: 0.72rem; }
+      #current-doc-name { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #sidebar { width: 100%; }
+    }
 
     /* SIDEBAR RESPONSIVA */
     #sidebar {
@@ -155,17 +170,6 @@
     }
     #selection-popover button { background: transparent; border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; gap: 4px; }
     #selection-popover button:hover { background: var(--accent); }
-
-    /* ADAPTAÇÕES ESPECÍFICAS PARA TELAS PEQUENAS (CELULAR) */
-    @media (max-width: 768px) {
-      .nav-brand span { display: none; }
-      .nav-tab-btn { padding: 16px 8px; font-size: 0.75rem; }
-      .reader-toolbar { padding: 4px 6px; justify-content: center; }
-      .reader-toolbar > div { gap: 4px; }
-      .btn-icon { padding: 5px 8px; font-size: 0.72rem; }
-      #current-doc-name { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      #sidebar { width: 100%; }
-    }
   </style>
 </head>
 <body>
@@ -241,7 +245,7 @@
       </div>
 
       <div style="display:flex; align-items:center; gap:4px;">
-        <button class="btn-icon active" id="tool-select" onclick="setTool('select')"><i class="fa-solid fa-arrow-pointer" title="Selecionar / Livro"></i></button>
+        <button class="btn-icon active" id="tool-select" onclick="setTool('select')"><i class="fa-solid fa-arrow-pointer" title="Selecionar"></i></button>
         <button class="btn-icon" id="tool-pen" onclick="setTool('pen')"><i class="fa-solid fa-pen" title="Caneta"></i></button>
         <button class="btn-icon" id="tool-highlighter" onclick="setTool('highlighter')"><i class="fa-solid fa-highlighter" title="Marcador"></i></button>
         <button class="btn-icon" id="tool-eraser" onclick="setTool('eraser')"><i class="fa-solid fa-eraser" title="Borracha"></i></button>
@@ -422,18 +426,14 @@
 
       for (let i = 1; i <= totalPages; i++) {
         const page = await pdfDoc.getPage(i);
-        const viewport = page.getViewport({ scale: 1.35 });
+        const viewport = page.getViewport({ scale: 1.5 });
 
         const wrapper = document.createElement('div');
         wrapper.className = `pdf-page-wrapper ${i === 1 ? 'active-page' : ''}`;
         wrapper.dataset.page = i;
-        wrapper.style.width = `${viewport.width}px`;
-        wrapper.style.height = `${viewport.height}px`;
 
         const inner = document.createElement('div');
         inner.className = 'pdf-page-inner';
-        inner.style.width = `${viewport.width}px`;
-        inner.style.height = `${viewport.height}px`;
 
         const canvas = document.createElement('canvas');
         canvas.height = viewport.height; 
@@ -444,7 +444,7 @@
         drawCanvas.className = 'drawing-canvas';
         drawCanvas.height = viewport.height; 
         drawCanvas.width = viewport.width;
-        setupDrawing(drawCanvas, i, viewport.width, viewport.height);
+        setupDrawing(drawCanvas, i);
         inner.appendChild(drawCanvas);
 
         await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
@@ -469,13 +469,19 @@
       currentPageNum = pageNum;
       document.getElementById('current-doc-name').textContent = `${currentDocName} (Pág ${currentPageNum}/${totalPages})`;
       
-      document.querySelectorAll('.pdf-page-wrapper').forEach(w => {
-        if (parseInt(w.dataset.page) === currentPageNum) {
-          w.classList.add('active-page');
-        } else {
-          w.classList.remove('active-page');
-        }
-      });
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        document.querySelectorAll('.pdf-page-wrapper').forEach(w => {
+          if (parseInt(w.dataset.page) === currentPageNum) {
+            w.classList.add('active-page');
+          } else {
+            w.classList.remove('active-page');
+          }
+        });
+      } else {
+        const targetPage = document.querySelector(`.pdf-page-wrapper[data-page="${currentPageNum}"]`);
+        if (targetPage) targetPage.scrollIntoView({ behavior: 'smooth' });
+      }
       document.getElementById('selection-popover').style.display = 'none';
     }
 
@@ -583,7 +589,7 @@
       if(h) { h.comment = txt; localStorage.setItem(`hl_${currentDocName}`, JSON.stringify(highlights)); }
     }
 
-    function setupDrawing(canvas, pageNum, originalWidth, originalHeight) {
+    function setupDrawing(canvas, pageNum) {
       const ctx = canvas.getContext('2d');
       let isDrawing = false;
 
@@ -603,7 +609,6 @@
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         
-        // Mapeia o ponto exato relativo considerando o dimensionamento de CSS vs resolução nativa do canvas
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
 
@@ -628,10 +633,10 @@
         const color = document.getElementById('pen-color').value;
 
         if (activeTool === 'eraser') {
-          ctx.clearRect(pos.x - 25, pos.y - 25, 50, 50);
+          ctx.clearRect(pos.x - 30, pos.y - 30, 60, 60);
         } else {
           ctx.strokeStyle = activeTool === 'highlighter' ? color + '55' : color;
-          ctx.lineWidth = activeTool === 'highlighter' ? 18 : 4;
+          ctx.lineWidth = activeTool === 'highlighter' ? 22 : 5;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
           ctx.lineTo(pos.x, pos.y);
@@ -661,14 +666,14 @@
     let touchStartY = 0;
 
     document.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 1) {
+      if (window.innerWidth <= 768 && e.touches.length === 1) {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
       }
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
-      if (activeTool !== 'select' || e.changedTouches.length === 0) return;
+      if (window.innerWidth > 768 || activeTool !== 'select' || e.changedTouches.length === 0) return;
       const touchEndX = e.changedTouches[0].clientX;
       const touchEndY = e.changedTouches[0].clientY;
       const diffX = touchStartX - touchEndX;
@@ -703,8 +708,8 @@
     }
 
     async function fetchAI(promptText) {
-      const API_KEY_FIXA = "AQ.Ab8RN6L28JJkUoYIoOfOR0V_yPC5oIkHt463QLdSqSPMBG3w7g";
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${API_KEY_FIXA}`;
+      const API_KEY_FIXA = "AQ.Ab8RN6JcWy6Iqq8a1zC_TsF_Obhkh0YGDvcpRGxMFS2JF4HgeQ";
+      const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY_FIXA}`;
 
       try {
         const res = await fetch(url, {
