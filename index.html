@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>PDF Studio Pro + AI Suite</title>
   
   <!-- PDF.js para Renderização -->
@@ -28,16 +28,16 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { background-color: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-    /* BARRA DE NAVEGAÇÃO */
+    /* BARRA DE NAVEGAÇÃO RESPONSIVA */
     nav.main-nav {
-      background: var(--panel-dark); border-bottom: 1px solid var(--border-color); padding: 0 20px;
-      display: flex; justify-content: space-between; align-items: center; height: 60px; flex-shrink: 0; z-index: 1000;
+      background: var(--panel-dark); border-bottom: 1px solid var(--border-color); padding: 0 15px;
+      display: flex; justify-content: space-between; align-items: center; height: 55px; flex-shrink: 0; z-index: 1000;
     }
-    .nav-brand { font-size: 1.1rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-    .nav-tabs { display: flex; gap: 5px; }
+    .nav-brand { font-size: 1rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 6px; }
+    .nav-tabs { display: flex; gap: 2px; }
     .nav-tab-btn {
-      background: transparent; color: var(--text-muted); border: none; padding: 18px 14px; font-weight: 600;
-      cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; font-size: 0.85rem;
+      background: transparent; color: var(--text-muted); border: none; padding: 16px 10px; font-weight: 600;
+      cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; font-size: 0.8rem;
     }
     .nav-tab-btn:hover, .nav-tab-btn.active { color: var(--text-main); border-bottom-color: var(--accent); }
 
@@ -45,54 +45,55 @@
     .app-screen.active { display: flex; }
 
     /* TELA: MEUS DOCUMENTOS */
-    #screen-docs { padding: 30px; flex-direction: column; max-width: 1100px; margin: 0 auto; width: 100%; }
-    .screen-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    #screen-docs { padding: 20px; flex-direction: column; max-width: 1100px; margin: 0 auto; width: 100%; }
+    .screen-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
     .btn-primary {
-      background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 10px 18px;
-      border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 10px 16px;
+      border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem;
     }
     .btn-icon {
       background: var(--card-dark); color: var(--text-main); border: 1px solid var(--border-color);
-      padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 5px;
     }
     .btn-icon:hover, .btn-icon.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-    .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
     .doc-card {
-      background: var(--panel-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;
-      display: flex; flex-direction: column; gap: 10px; position: relative; transition: 0.2s; cursor: pointer;
+      background: var(--panel-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px;
+      display: flex; flex-direction: column; gap: 8px; position: relative; transition: 0.2s; cursor: pointer;
     }
     .doc-card:hover { border-color: var(--accent); transform: translateY(-2px); }
     .doc-card-header { display: flex; justify-content: space-between; align-items: center; }
-    .doc-icon { font-size: 2rem; color: #ef4444; }
-    .doc-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .doc-icon { font-size: 1.8rem; color: #ef4444; }
+    .doc-title { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* TELA: QUESTIONÁRIOS */
-    #screen-quiz { padding: 30px; flex-direction: column; max-width: 850px; margin: 0 auto; width: 100%; }
-    .quiz-card { background: var(--panel-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
-    .form-control { width: 100%; background: var(--card-dark); border: 1px solid var(--border-color); color: white; padding: 8px 12px; border-radius: 6px; }
+    #screen-quiz { padding: 20px; flex-direction: column; max-width: 850px; margin: 0 auto; width: 100%; }
+    .quiz-card { background: var(--panel-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
+    .form-control { width: 100%; background: var(--card-dark); border: 1px solid var(--border-color); color: white; padding: 8px 10px; border-radius: 6px; font-size: 0.9rem; }
 
-    .quiz-item { background: var(--panel-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 15px; }
+    .quiz-item { background: var(--panel-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 12px; }
     .quiz-option {
-      background: var(--card-dark); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 6px;
-      margin-top: 8px; cursor: pointer; transition: 0.2s; font-size: 0.88rem;
+      background: var(--card-dark); border: 1px solid var(--border-color); padding: 10px 12px; border-radius: 6px;
+      margin-top: 6px; cursor: pointer; transition: 0.2s; font-size: 0.85rem;
     }
     .quiz-option:hover { border-color: var(--accent); }
     .quiz-option.correct { background: rgba(34, 197, 94, 0.2); border-color: var(--success); }
     .quiz-option.incorrect { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); }
 
-    /* TELA: LEITOR DE PDF */
-    #screen-reader { flex-direction: column; height: calc(100vh - 60px); }
+    /* TELA: LEITOR DE PDF OTIMIZADA PARA MOBILE */
+    #screen-reader { flex-direction: column; height: calc(100vh - 55px); }
     .reader-toolbar {
-      background: var(--panel-dark); border-bottom: 1px solid var(--border-color); padding: 8px 16px;
-      display: flex; justify-content: space-between; align-items: center; z-index: 10; flex-shrink: 0;
+      background: var(--panel-dark); border-bottom: 1px solid var(--border-color); padding: 6px 10px;
+      display: flex; justify-content: space-between; align-items: center; z-index: 10; flex-shrink: 0; gap: 5px; flex-wrap: wrap;
     }
     .reader-workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
-    #viewer-container { flex: 1; overflow: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; background: #070a12; }
+    #viewer-container { flex: 1; overflow: auto; padding: 10px; display: flex; flex-direction: column; align-items: center; background: #070a12; -webkit-overflow-scrolling: touch; }
     
-    .pdf-page-wrapper { position: relative; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); background: white; }
+    .pdf-page-wrapper { position: relative; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); background: white; max-width: 100%; }
+    .pdf-page-wrapper canvas { max-width: 100%; height: auto !important; display: block; }
     
     .pdf-page-wrapper.mode-select { cursor: text; }
     .pdf-page-wrapper.mode-pen { 
@@ -105,22 +106,23 @@
       cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l9.6-9.6a1 1 0 0 1 1.4 0l4.3 4.3a1 1 0 0 1 0 1.4L8.4 21A1 1 0 0 1 7 21z"/><path d="M22 21H7"/></svg>') 0 24, pointer; 
     }
 
-    .drawing-canvas { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; }
+    .drawing-canvas { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; width: 100%; height: 100%; }
     .drawing-canvas.active { pointer-events: auto; }
     .textLayer { z-index: 2; opacity: 0.35; mix-blend-mode: multiply; }
 
-    /* SIDEBAR */
+    /* SIDEBAR RESPONSIVA */
     #sidebar {
-      width: 320px; background: var(--panel-dark); border-left: 1px solid var(--border-color);
-      display: flex; flex-direction: column; transition: margin-right 0.3s ease; margin-right: -320px;
+      width: 290px; background: var(--panel-dark); border-left: 1px solid var(--border-color);
+      display: flex; flex-direction: column; transition: transform 0.3s ease; position: absolute; right: 0; top: 0; bottom: 0; z-index: 100;
+      transform: translateX(100%);
     }
-    #sidebar.open { margin-right: 0; }
+    #sidebar.open { transform: translateX(0); }
     .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
-    .sb-tab { flex: 1; padding: 10px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 0.8rem; }
+    .sb-tab { flex: 1; padding: 10px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 0.78rem; }
     .sb-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
-    .sidebar-body { flex: 1; overflow-y: auto; padding: 12px; }
+    .sidebar-body { flex: 1; overflow-y: auto; padding: 10px; }
 
-    .hl-card, .ai-card { background: var(--card-dark); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; margin-bottom: 10px; font-size: 0.82rem; }
+    .hl-card, .ai-card { background: var(--card-dark); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; margin-bottom: 8px; font-size: 0.8rem; }
     .hl-card { border-left: 3px solid #facc15; }
     .ai-card { border-left: 3px solid var(--accent); }
 
@@ -129,21 +131,32 @@
       position: absolute; display: none; background: #1e293b; border: 1px solid var(--border-color);
       border-radius: 6px; padding: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 999; gap: 4px;
     }
-    #selection-popover button { background: transparent; border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; display: flex; align-items: center; gap: 5px; }
+    #selection-popover button { background: transparent; border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; gap: 4px; }
     #selection-popover button:hover { background: var(--accent); }
+
+    /* ADAPTAÇÕES ESPECÍFICAS PARA TELAS PEQUENAS (CELULAR) */
+    @media (max-width: 768px) {
+      .nav-brand span { display: none; }
+      .nav-tab-btn { padding: 16px 8px; font-size: 0.75rem; }
+      .reader-toolbar { padding: 4px 6px; justify-content: center; }
+      .reader-toolbar > div { gap: 4px; }
+      .btn-icon { padding: 5px 8px; font-size: 0.72rem; }
+      #current-doc-name { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #sidebar { width: 100%; }
+    }
   </style>
 </head>
 <body>
 
   <!-- BARRA DE NAVEGAÇÃO SUPERIOR -->
   <nav class="main-nav">
-    <div class="nav-brand"><i class="fa-solid fa-graduation-cap"></i> PDF Studio Pro</div>
+    <div class="nav-brand"><i class="fa-solid fa-graduation-cap"></i> <span>PDF Studio Pro</span></div>
     <div class="nav-tabs">
-      <button class="nav-tab-btn active" id="tab-btn-docs" onclick="switchTab('docs')"><i class="fa-solid fa-folder-open"></i> Meus Documentos</button>
-      <button class="nav-tab-btn" id="tab-btn-quiz" onclick="switchTab('quiz')"><i class="fa-solid fa-list-check"></i> Questionários IA</button>
+      <button class="nav-tab-btn active" id="tab-btn-docs" onclick="switchTab('docs')"><i class="fa-solid fa-folder-open"></i> Documentos</button>
+      <button class="nav-tab-btn" id="tab-btn-quiz" onclick="switchTab('quiz')"><i class="fa-solid fa-list-check"></i> Simulados IA</button>
     </div>
-    <div style="display:flex; gap:8px;">
-      <button class="btn-icon" onclick="exportNotes()"><i class="fa-solid fa-file-export"></i> Exportar Notas</button>
+    <div style="display:flex; gap:6px;">
+      <button class="btn-icon" onclick="exportNotes()" title="Exportar Notas"><i class="fa-solid fa-file-export"></i></button>
     </div>
   </nav>
 
@@ -152,7 +165,7 @@
     <div class="screen-header">
       <div>
         <h2>Meus Documentos</h2>
-        <p style="color:var(--text-muted); font-size:0.85rem;">Carregue e organize seus PDFs para estudo</p>
+        <p style="color:var(--text-muted); font-size:0.8rem;">Carregue e organize seus PDFs para estudo</p>
       </div>
       <label class="btn-primary">
         <i class="fa-solid fa-plus"></i> Abrir PDF
@@ -164,33 +177,32 @@
 
   <!-- TELA 2: QUESTIONÁRIOS POR IA -->
   <div id="screen-quiz" class="app-screen">
-    <h2>Gerador de Simulados & Questionários (Nível Concurso Público)</h2>
-    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">A IA criará questões inéditas baseadas no conteúdo do PDF ativo.</p>
+    <h2>Gerador de Simulados & Questionários</h2>
+    <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:12px;">A IA criará questões baseadas no conteúdo do PDF ativo.</p>
     
     <div class="quiz-card">
       <div class="form-group">
         <label>Documento Ativo:</label>
         <input type="text" id="quiz-doc-name" class="form-control" value="Nenhum PDF aberto" readonly>
       </div>
-      <div style="display:flex; gap:10px;">
+      <div style="display:flex; gap:8px;">
         <div class="form-group" style="flex:1;">
-          <label>Quantidade de Questões:</label>
+          <label>Questões:</label>
           <select id="quiz-count" class="form-control">
-            <option value="5">5 Questões</option>
-            <option value="10" selected>10 Questões</option>
-            <option value="15">15 Questões</option>
-            <option value="20">20 Questões</option>
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="15">15</option>
           </select>
         </div>
         <div class="form-group" style="flex:1;">
-          <label>Nível da Prova:</label>
+          <label>Nível:</label>
           <select id="quiz-difficulty" class="form-control">
-            <option value="Concurso Público (Cebraspe/FGV/Vunesp)" selected>Concurso Público</option>
-            <option value="Ensino Superior / Avançado">Ensino Superior / Avançado</option>
+            <option value="Concurso Público" selected>Concurso</option>
+            <option value="Superior">Superior</option>
           </select>
         </div>
       </div>
-      <button class="btn-primary" style="width:100%; justify-content:center; margin-top:10px;" onclick="generateQuiz()">
+      <button class="btn-primary" style="width:100%; justify-content:center; margin-top:8px;" onclick="generateQuiz()">
         <i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Simulado
       </button>
     </div>
@@ -201,21 +213,22 @@
   <!-- TELA 3: LEITOR DE PDF -->
   <div id="screen-reader" class="app-screen">
     <div class="reader-toolbar">
-      <div style="display:flex; align-items:center; gap:10px;">
-        <button class="btn-icon" onclick="switchTab('docs')"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
-        <span id="current-doc-name" style="font-weight:600; font-size:0.88rem;">Documento</span>
-      </div>
-
       <div style="display:flex; align-items:center; gap:6px;">
-        <button class="btn-icon active" id="tool-select" onclick="setTool('select')"><i class="fa-solid fa-arrow-pointer"></i> Texto / Selecionar</button>
-        <button class="btn-icon" id="tool-pen" onclick="setTool('pen')"><i class="fa-solid fa-pen"></i> Caneta</button>
-        <button class="btn-icon" id="tool-highlighter" onclick="setTool('highlighter')"><i class="fa-solid fa-highlighter"></i> Marca-Texto</button>
-        <button class="btn-icon" id="tool-eraser" onclick="setTool('eraser')"><i class="fa-solid fa-eraser"></i> Borracha</button>
-        <input type="color" id="pen-color" value="#ef4444" style="border:none; background:none; width:26px; height:26px; cursor:pointer;" title="Cor da Caneta">
+        <button class="btn-icon" onclick="switchTab('docs')"><i class="fa-solid fa-arrow-left"></i></button>
+        <span id="current-doc-name" style="font-weight:600; font-size:0.8rem;">Documento</span>
       </div>
 
-      <div>
-        <button class="btn-icon" onclick="toggleSidebar()"><i class="fa-solid fa-bookmark"></i> Painel (<span id="hl-count">0</span>)</button>
+      <div style="display:flex; align-items:center; gap:4px;">
+        <button class="btn-icon active" id="tool-select" onclick="setTool('select')"><i class="fa-solid fa-arrow-pointer"></i></button>
+        <button class="btn-icon" id="tool-pen" onclick="setTool('pen')"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn-icon" id="tool-highlighter" onclick="setTool('highlighter')"><i class="fa-solid fa-highlighter"></i></button>
+        <button class="btn-icon" id="tool-eraser" onclick="setTool('eraser')"><i class="fa-solid fa-eraser"></i></button>
+        <input type="color" id="pen-color" value="#ef4444" style="border:none; background:none; width:22px; height:22px; cursor:pointer;" title="Cor">
+      </div>
+
+      <div style="display:flex; align-items:center; gap:4px;">
+        <button class="btn-icon" onclick="downloadCurrentPDF()" title="Baixar PDF Atual"><i class="fa-solid fa-download"></i></button>
+        <button class="btn-icon" onclick="toggleSidebar()"><i class="fa-solid fa-bookmark"></i> <span id="hl-count">0</span></button>
       </div>
     </div>
 
@@ -235,8 +248,8 @@
   <!-- MENU POPOVER DE SELEÇÃO DE TEXTO -->
   <div id="selection-popover">
     <button onclick="createHighlight()"><i class="fa-solid fa-highlighter" style="color:#facc15;"></i> Destacar</button>
-    <button onclick="askAI('explain')"><i class="fa-solid fa-brain" style="color:#60a5fa;"></i> Explicar IA</button>
-    <button onclick="askAI('summarize')"><i class="fa-solid fa-compress" style="color:#34d399;"></i> Resumir IA</button>
+    <button onclick="askAI('explain')"><i class="fa-solid fa-brain" style="color:#60a5fa;"></i> Explicar</button>
+    <button onclick="askAI('summarize')"><i class="fa-solid fa-compress" style="color:#34d399;"></i> Resumir</button>
   </div>
 
   <script>
@@ -254,7 +267,6 @@
     let currentSidebarTab = 'hl';
     let db = null;
 
-    // BANCO DE DADOS INDEXEDDB PARA SALVAR O PDF REAL NO NAVEGADOR
     const initDB = () => {
       return new Promise((resolve, reject) => {
         const request = indexedDB.open("PDFStudioStorage", 1);
@@ -365,7 +377,6 @@
 
     async function openCurrentDoc(docName) {
       currentDocName = docName || currentDocName;
-      
       pdfArrayBuffer = await getPDFFromDB(currentDocName);
 
       if(!pdfArrayBuffer) {
@@ -423,7 +434,6 @@
 
     function setTool(tool) {
       activeTool = tool;
-      
       document.querySelectorAll('.reader-toolbar .btn-icon').forEach(btn => btn.classList.remove('active'));
       const btnMap = { select: 'tool-select', pen: 'tool-pen', highlighter: 'tool-highlighter', eraser: 'tool-eraser' };
       if(btnMap[tool]) document.getElementById(btnMap[tool])?.classList.add('active');
@@ -434,18 +444,14 @@
 
         const canvas = wrapper.querySelector('.drawing-canvas');
         if (canvas) {
-          if (tool === 'select') {
-            canvas.classList.remove('active');
-          } else {
-            canvas.classList.add('active');
-          }
+          if (tool === 'select') canvas.classList.remove('active');
+          else canvas.classList.add('active');
         }
       });
     }
 
     document.addEventListener('mouseup', (e) => {
       if (activeTool !== 'select') return;
-
       const selection = window.getSelection();
       const text = selection.toString().trim();
       const popover = document.getElementById('selection-popover');
@@ -483,12 +489,12 @@
         const card = document.createElement('div');
         card.className = 'hl-card';
         card.innerHTML = `
-          <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size:0.75rem; margin-bottom:4px;">
+          <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size:0.7rem; margin-bottom:4px;">
             <span>Página ${h.page}</span>
             <button style="background:none; border:none; color:red; cursor:pointer;" onclick="deleteHl(${h.id})">✕</button>
           </div>
           <p>"${h.text}"</p>
-          <input type="text" placeholder="Adicionar nota..." value="${h.comment || ''}" oninput="updateComment(${h.id}, this.value)" style="width:100%; background:#0f172a; border:1px solid var(--border-color); color:white; padding:4px; border-radius:4px; margin-top:5px;">
+          <input type="text" placeholder="Nota..." value="${h.comment || ''}" oninput="updateComment(${h.id}, this.value)" style="width:100%; background:#0f172a; border:1px solid var(--border-color); color:white; padding:4px; border-radius:4px; margin-top:4px;">
         `;
         container.appendChild(card);
       });
@@ -542,18 +548,24 @@
         }
       });
 
-      canvas.addEventListener('mouseup', () => {
-        if(isDrawing) { isDrawing = false; saveCanvasState(); }
-      });
-      canvas.addEventListener('mouseleave', () => {
-        if(isDrawing) { isDrawing = false; saveCanvasState(); }
-      });
+      canvas.addEventListener('mouseup', () => { if(isDrawing) { isDrawing = false; saveCanvasState(); } });
+      canvas.addEventListener('mouseleave', () => { if(isDrawing) { isDrawing = false; saveCanvasState(); } });
     }
 
-    // GEMINI IA (USANDO 3.6 FLASH E O SEU TOKEN)
+    function downloadCurrentPDF() {
+      if (!pdfArrayBuffer) {
+        alert("Nenhum PDF carregado para baixar.");
+        return;
+      }
+      const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = currentDocName || "documento.pdf";
+      link.click();
+    }
+
     async function fetchAI(promptText) {
       const API_KEY_FIXA = "AQ.Ab8RN6LN_aTQ-ULVFLLL37hj0hN-EBdEcHipHqM4lKrl6P-FBA";
-      
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${API_KEY_FIXA}`;
 
       try {
@@ -606,28 +618,23 @@
 
     async function generateQuiz() {
       if(!currentDocText || currentDocText.trim().length < 20) { 
-        alert("Por favor, abra um PDF com texto legível primeiro para a IA criar o simulado!"); 
+        alert("Abra um PDF legível primeiro!"); 
         return; 
       }
 
       const count = document.getElementById('quiz-count').value;
       const diff = document.getElementById('quiz-difficulty').value;
       const resultsDiv = document.getElementById('quiz-results');
-      resultsDiv.innerHTML = `<p style="color:var(--accent); font-weight:bold;"><i class="fa-solid fa-spinner fa-spin"></i> A IA está criando ${count} questões no nível de Concurso Público...</p>`;
+      resultsDiv.innerHTML = `<p style="color:var(--accent); font-weight:bold;"><i class="fa-solid fa-spinner fa-spin"></i> A IA está criando o simulado...</p>`;
 
-      const prompt = `Você é uma banca examinadora de CONCURSO PÚBLICO (estilo Cebraspe, FGV, Vunesp). 
-Com base estrita no texto a seguir: "${currentDocText.substring(0, 7000)}", crie exatas ${count} questões de múltipla escolha.
-
-REGRAS:
-- Nível de Dificuldade: ${diff} (questões interpretativas, com pegadinhas e auto-explicativas).
-- Formato de resposta: Responda EXCLUSIVAMENTE em formato JSON (array de objetos), sem nenhum texto fora do JSON.
-- Cada objeto deve seguir exatamente este formato:
+      const prompt = `Você é uma banca examinadora. Com base no texto: "${currentDocText.substring(0, 7000)}", crie exatas ${count} questões de múltipla escolha.
+Formato de resposta EXCLUSIVAMENTE em JSON (array de objetos):
 [
   {
-    "question": "Enunciado da questão no padrão de prova de concurso",
+    "question": "Enunciado",
     "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
     "answerIndex": 0,
-    "explanation": "Gabarito comentado fundamentado no texto do documento."
+    "explanation": "Gabarito comentado."
   }
 ]`;
 
@@ -639,7 +646,7 @@ REGRAS:
         const questions = JSON.parse(cleanJson);
         
         resultsDiv.innerHTML = '';
-        questions.forEach((q, idx) => {
+        (Array.isArray(questions) ? questions : []).forEach((q, idx) => {
           const qEl = document.createElement('div');
           qEl.className = 'quiz-item';
           qEl.innerHTML = `
@@ -649,27 +656,27 @@ REGRAS:
                 ${opt}
               </div>
             `).join('')}
-            <div class="quiz-exp" style="display:none; margin-top:10px; font-size:0.85rem; color:var(--accent);"></div>
+            <div class="quiz-exp" style="display:none; margin-top:8px; font-size:0.8rem; color:var(--accent);"></div>
           `;
           resultsDiv.appendChild(qEl);
         });
       } catch(e) {
-        resultsDiv.innerHTML = `<p style="color:red;">A IA gerou a resposta com formatação fora do padrão. Clique em 'Gerar Simulado' novamente para reprocessar.</p>`;
+        resultsDiv.innerHTML = `<p style="color:red;">Erro ao processar as questões da IA. Tente gerar novamente.</p>`;
       }
     }
 
     function checkAnswer(el, isCorrect, exp) {
       const parent = el.parentElement;
       parent.querySelectorAll('.quiz-option').forEach(o => o.style.pointerEvents = 'none');
-      if(isCorrect) { el.classList.add('correct'); }
-      else { el.classList.add('incorrect'); }
+      if(isCorrect) el.classList.add('correct');
+      else el.classList.add('incorrect');
       const expDiv = parent.querySelector('.quiz-exp');
-      expDiv.innerHTML = `<strong>Gabarito Comentado:</strong> ${exp}`;
+      expDiv.innerHTML = `<strong>Gabarito:</strong> ${exp}`;
       expDiv.style.display = 'block';
     }
 
     function exportNotes() {
-      if(highlights.length === 0) { alert("Nenhum destaque salvo para exportar!"); return; }
+      if(highlights.length === 0) { alert("Nenhum destaque salvo!"); return; }
       let content = `=== NOTAS DE ESTUDO: ${currentDocName} ===\n\n`;
       highlights.forEach(h => {
         content += `[Página ${h.page}]\nTrecho: "${h.text}"\nNota: ${h.comment || 'Nenhuma'}\n\n`;
